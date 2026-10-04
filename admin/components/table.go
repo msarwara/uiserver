@@ -43,9 +43,9 @@ func DataTable(fields []GridField, rows []GridRow, resourceKey string) elem.Node
 
 		cells = append(cells, elem.Td(attrs.Props{attrs.Class: "row-actions"},
 			elem.Button(attrs.Props{
-				attrs.Class:   "btn btn-sm",
-				htmx.HXGet:    editHref,
-				htmx.HXTarget: "#" + ContentTargetID,
+				attrs.Class:    "btn btn-sm",
+				htmx.HXGet:     editHref,
+				htmx.HXTarget:  "#" + ContentTargetID,
 				htmx.HXPushURL: "true",
 			}, elem.Text("Edit")),
 			elem.Button(attrs.Props{

@@ -1,3 +1,6 @@
 /uiserver
 /uiserver.exe
 .claude/
+/uiserver.db
+/uiserver.db-wal
+/uiserver.db-shm

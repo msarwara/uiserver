@@ -13,9 +13,14 @@ import (
 
 const sessionCookie = "admin_session"
 
-// User identifies the signed-in operator.
+// User identifies the signed-in operator. ID and Role are only populated
+// when RBAC is active (Config.DB set) — in the simple/no-DB mode, Role is
+// the zero value and every permission check short-circuits to "allowed"
+// (see App.hasPermission).
 type User struct {
+	ID       int
 	Username string
+	Role     Role
 }
 
 // Authenticator checks credentials. SimpleAuthenticator below is a demo
@@ -111,6 +116,17 @@ func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// authenticate verifies credentials, preferring the DB-backed Users table
+// (and its Role) when RBAC is active; Config.Authenticator is only used in
+// the simple/no-DB mode, since roles have to live in the same database the
+// Configurator and resource data already do.
+func (a *App) authenticate(username, password string) (*User, error) {
+	if a.rbac != nil {
+		return a.rbac.verifyPassword(username, password)
+	}
+	return a.auth.Authenticate(username, password)
+}
+
 func (a *App) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 	if CurrentUser(r) != nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -123,7 +139,7 @@ func (a *App) handleLoginSubmit(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	user, err := a.auth.Authenticate(username, password)
+	user, err := a.authenticate(username, password)
 	if err != nil {
 		a.writeHTML(w, components.LoginPage(a.title, "Invalid username or password."))
 		return

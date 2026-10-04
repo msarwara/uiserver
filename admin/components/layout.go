@@ -35,6 +35,7 @@ func MasterPage(title string, nav []NavItem, activeKey string, username string, 
 			elem.Script(attrs.Props{
 				attrs.Src: "https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js",
 			}),
+			elem.Script(nil, elem.Raw(optionsVisibilityJS)),
 			elem.Style(nil, elem.Text(globalCSS)),
 		),
 		elem.Body(nil,
@@ -100,6 +101,23 @@ func Card(content ...elem.Node) elem.Node {
 	return elem.Div(attrs.Props{attrs.Class: "card"}, content...)
 }
 
+// optionsVisibilityJS keeps a field-editor row's Options textarea in sync
+// with its Type <select>: visible for Select/Checkbox, hidden otherwise.
+// The initial state is rendered server-side (see FieldEditorRow), so this
+// only has to react to the admin changing Type afterward — no server round
+// trip, and a single document-level listener (registered once, when the
+// full page loads) keeps working for rows added later via htmx, since it
+// doesn't depend on which element originally existed.
+const optionsVisibilityJS = `
+document.addEventListener('change', function (e) {
+	if (!e.target.matches('select[name$="__type"]')) return;
+	var row = e.target.closest('tr');
+	var cell = row && row.querySelector('.options-cell');
+	if (!cell) return;
+	cell.style.display = (e.target.value === 'select' || e.target.value === 'checkbox') ? '' : 'none';
+});
+`
+
 const globalCSS = `
 	* { box-sizing: border-box; }
 	body {
@@ -139,7 +157,8 @@ const globalCSS = `
 		text-decoration: none;
 		font-size: 0.95rem;
 	}
-	.btn-ghost { background: transparent; border: 1px solid #868e96; color: #f8f9fa; }
+	.btn-ghost { background: transparent; border: 1px solid #ced4da; color: #343a40; }
+	.nav-auth .btn-ghost, .navbar .btn-ghost { border-color: #868e96; color: #f8f9fa; }
 	.btn-danger { background: #e03131; }
 	.btn-sm { padding: 0.3rem 0.6rem; font-size: 0.85rem; }
 	.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
@@ -164,4 +183,5 @@ const globalCSS = `
 	.form-field-checkbox { flex-direction: row; align-items: center; }
 	.field-error { color: #c92a2a; font-size: 0.85rem; }
 	.form-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+	.options-textarea { width: 160px; height: 4.5rem; font-size: 0.85rem; padding: 0.4rem; border: 1px solid #ced4da; border-radius: 6px; }
 `

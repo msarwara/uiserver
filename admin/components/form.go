@@ -49,8 +49,8 @@ func FormCard(action, method string, fields []FormField, submitLabel string) ele
 	inputs = append(inputs, elem.Div(attrs.Props{attrs.Class: "form-actions"},
 		elem.Button(attrs.Props{attrs.Type: "submit", attrs.Class: "btn"}, elem.Text(submitLabel)),
 		elem.A(attrs.Props{
-			attrs.Class:    "btn btn-ghost",
-			attrs.Href:     "javascript:history.back()",
+			attrs.Class: "btn btn-ghost",
+			attrs.Href:  "javascript:history.back()",
 		}, elem.Text("Cancel")),
 	))
 
